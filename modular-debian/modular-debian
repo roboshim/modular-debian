@@ -1,1 +1,19 @@
 #!/usr/bin/env bash
+
+usage() {
+	cat <<EndUsage
+$0 IMAGE.ARCH.ACTION
+
+IMAGE
+image name
+
+ARCH
+architecture, i386 or amd64
+
+ACTION
+"make"
+"makeall"
+"updateall"
+"makefound"
+EndUsage
+}
