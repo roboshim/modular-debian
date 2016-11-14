@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 
+### variables
+
+me="$( readlink -f "$0" )"
+mydir="${me%/*}"
+debug=0
+verbose=0
+
+### functions
+
 usage() {
 	cat <<EndUsage
-$0 IMAGE.ARCH.ACTION
+$0 ACTION[.IMAGE.ARCH]
 
 IMAGE
 image name
@@ -17,3 +26,81 @@ ACTION
 "makefound"
 EndUsage
 }
+
+msg() {
+	local m="..."
+	local sp="$$"
+	local i="$( ps -C "${0##*/}" fh -o pid,cmd | awk -v SP="$sp" '$1==SP{A=substr($0,6,index($0,"\\")-6); gsub(/[^ ]/," ",A); print A;}' )"
+	m="$( echo "$m" | tr '.' "$1" )"
+	shift
+	printf '%s %s %s: %s %s\n' "$i" "$m" "$1" "$2" "$m"
+}
+
+verbmsg() {
+	local v="$1"
+	local m="$2"
+	local ec="$3"
+	if [ $verbose -ge $v ] ; then
+		msg "#" "VINFO" "$m"
+	fi
+	if [ -n "$ec" ] ; then exit "$ec" ; fi
+}
+
+error() {
+	msg "*" "ERROR" "$1"
+	local e=1
+	if [ $# -gt 1 ] && [ -n "$2" ] ; then e=$2 ; fi
+	if [ $e -ne 0 ] ; then exit $e ; fi
+}
+
+warn() {
+	msg "*" "WARNING" "$1"
+	if [ $# -gt 1 ] && [ -n "$2" ] && [ "$2" -ne 0 ] ; then exit $2 ; fi
+}
+
+info() {
+	msg "-" "INFO" "$1"
+	if [ $# -gt 1 ] && [ -n "$2" ] && [ "$2" -ne 0 ] ; then exit $2 ; fi
+}
+
+createsparseimage() {
+	verbmsg 1 "${FUNCNAME[0]} $*"
+	if [ $# -lt 2 ] || [ "${1:+.}${2:+.}" != ".." ] ; then
+		error "usage: ${FUNCNAME[0]} SIZE IMAGE" 0
+		return 1
+	else
+		dd if=/dev/zero bs=1 count=0 seek="$1" of="$2" 
+	fi
+}
+
+
+### main code
+
+if [ $# -eq 0 ] ; then
+	usage
+else
+	while [ $# -gt 0 ] ; do
+		par="$1"
+		shift
+		case "$par" in
+			"-v" ) verbose=$(($verbose+1)) ;;
+			"-q" ) verbose=$(($verbose-1)) ;;
+			"-s" ) verbose=0 ;;
+			"-d" ) debug=$(($debug+1)) ;;
+			* )
+				IFS="." read cmd image arch <<<"$par"
+				case "$cmd" in
+					"make" ) : ;;
+					"makeall" ) : ;;
+					"udpateall" ) : ;;
+					"makefound" ) : ;;
+					* )
+						error "Unknown command '$cmd'" 0
+						usage
+						exit 1
+					;;
+				esac
+			;;
+		esac
+	done
+fi
