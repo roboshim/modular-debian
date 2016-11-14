@@ -106,14 +106,14 @@ every level and the image name with names from 1st level to nth level, e.g.:
 
   * first level image is **base**
   * second level image is **essential**, i.e. whole image name is
-    **essential-base.sqfs.img**
+    **base-essential.sqfs.img**
   * third level image is **console**, i.e. whole image name is
-    **console-essential-base.sqfs.img**
+    **base-essential-console.sqfs.img**
   * fourth level image is **lightx**, i.e. whole image name is
-    **lightx-console-essential-base.sqfs.img**
+    **base-lightx-console-essential.sqfs.img**
   * there can be other fourth level image named **smtp** working as SMTP
     server with fixed config, based on **console** image, i.e. whole image name
-    is **smtp-console-essential-base.sqfs.img**
+    is **base-essential-console-smtp.sqfs.img**
 
 And so on. There is no limit on level depth and which images are the images
 based on.
